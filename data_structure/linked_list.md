@@ -146,71 +146,96 @@ func reverseBetween(head *ListNode, m int, n int) *ListNode {
 
 思路：通过 dummy node 链表，连接各个元素
 
-```go
-func mergeTwoLists(l1 *ListNode, l2 *ListNode) *ListNode {
-    dummy := &ListNode{Val: 0}
-    head := dummy
-    for l1 != nil && l2 != nil {
-        if l1.Val < l2.Val {
-            head.Next = l1
-            l1 = l1.Next
-        } else {
-            head.Next = l2
-            l2 = l2.Next
+```java
+public ListNode mergeTwoLists(ListNode l1, ListNode l2) {
+        if(l1==null && l2==null)
+            return null;
+        ListNode p1=l1;
+        ListNode p2=l2;
+        
+        ListNode dummy=new ListNode(-1);
+        ListNode p3=dummy;
+        while(p1!=null && p2!=null)
+        {
+            if(p1.val<=p2.val)
+            {
+                p3.next=p1;
+                p3=p3.next;
+                p1=p1.next;
+            }
+            else
+            {
+                p3.next=p2;
+                p3=p3.next;
+                p2=p2.next;
+            }
         }
-        head = head.Next
+        p3.next=p1==null?p2:p1;  //处理未结束的节点
+        
+        return dummy.next;
     }
-    // 连接l1 未处理完节点
-    for l1 != nil {
-        head.Next = l1
-        head = head.Next
-        l1 = l1.Next
-    }
-    // 连接l2 未处理完节点
-    for l2 != nil {
-        head.Next = l2
-        head = head.Next
-        l2 = l2.Next
-    }
-    return dummy.Next
-}
 ```
 
 ### [partition-list](https://leetcode-cn.com/problems/partition-list/)
 
 > 给定一个链表和一个特定值 x，对链表进行分隔，使得所有小于  *x*  的节点都在大于或等于  *x*  的节点之前。
 
-思路：将大于 x 的节点，放到另外一个链表，最后连接这两个链表
-
-```go
-func partition(head *ListNode, x int) *ListNode {
-    // 思路：将大于x的节点，放到另外一个链表，最后连接这两个链表
-    // check
-    if head == nil {
-        return head
-    }
-    headDummy := &ListNode{Val: 0}
-    tailDummy := &ListNode{Val: 0}
-    tail := tailDummy
-    headDummy.Next = head
-    head = headDummy
-    for head.Next != nil {
-        if head.Next.Val < x {
-            head = head.Next
-        } else {
-            // 移除<x节点
-            t := head.Next
-            head.Next = head.Next.Next
-            // 放到另外一个链表
-            tail.Next = t
-            tail = tail.Next
+思路：将一个链表变为两个链表，一个按顺序连接比*x*小的节点，一个按顺序连接大于等于*x*的节点。
+```java
+public ListNode partition(ListNode head, int x) {
+        ListNode smallHead=new ListNode(0);
+        ListNode small=smallHead;
+        ListNode largeHead=new ListNode(0);
+        ListNode large=largeHead;
+        while(head!=null)
+        {
+            if(head.val<x)
+            {
+                small.next=head;
+                small=small.next;
+            }
+            else
+            {
+                large.next=head;
+                large=large.next;
+            }
+            head=head.next;
         }
+        large.next=null;
+        small.next=largeHead.next;
+        return smallHead.next;
     }
-    // 拼接两个链表
-    tail.Next = nil
-    head.Next = tailDummy.Next
-    return headDummy.Next
-}
+```
+```java   
+将小的往前移动
+public ListNode partition(ListNode head, int x) {
+        ListNode dummy=new ListNode(x-1); //最开头的哑结点
+        dummy.next=head;
+        ListNode smaller=dummy; //指向所遍历到的最后一个小节点
+        ListNode p=dummy;//
+
+        while(p.next!=null)
+        {
+            if(p.next.val<x && p.val>=x) //需要将下一个小于的节点前移
+            {
+                ListNode nodeMove=p.next; //保存要移动的节点
+                p.next=p.next.next;
+                nodeMove.next=smaller.next;
+                smaller.next=nodeMove;
+                smaller=smaller.next;
+            }
+            else if(p.next.val<x) //移动smaller 
+            {
+                smaller=p.next;
+                p=p.next;
+            }
+            else
+            {
+                p=p.next;
+            }
+        }
+        return dummy.next;
+    }
 ```
 
 哑巴节点使用场景
@@ -288,6 +313,17 @@ func mergeSort(head *ListNode) *ListNode {
 - 快慢指针 判断 fast 及 fast.Next 是否为 nil 值
 - 递归 mergeSort 需要断开中间节点
 - 递归返回条件为 head 为 nil 或者 head.Next 为 nil
+### [Middle of the Linked List](https://leetcode-cn.com/problems/middle-of-the-linked-list/)
+找到中间节点
+思路：快慢指针，一个进步2格，一个进步1格
+public ListNode middleNode(ListNode head) {
+        ListNode slow = head, fast = head;
+        while (fast != null && fast.next != null) {
+            slow = slow.next;
+            fast = fast.next.next;
+        }
+        return slow;
+    }
 
 ### [reorder-list](https://leetcode-cn.com/problems/reorder-list/)
 
@@ -296,70 +332,55 @@ func mergeSort(head *ListNode) *ListNode {
 
 思路：找到中点断开，翻转后面部分，然后合并前后两个链表
 
-```go
-func reorderList(head *ListNode)  {
-    // 思路：找到中点断开，翻转后面部分，然后合并前后两个链表
-    if head == nil {
-        return
-    }
-    mid := findMiddle(head)
-    tail := reverseList(mid.Next)
-    mid.Next = nil
-    head = mergeTwoLists(head, tail)
-}
-func findMiddle(head *ListNode) *ListNode {
-    fast := head.Next
-    slow := head
-    for fast != nil && fast.Next != nil {
-        fast = fast.Next.Next
-        slow = slow.Next
-    }
-    return slow
-}
-func mergeTwoLists(l1 *ListNode, l2 *ListNode) *ListNode {
-    dummy := &ListNode{Val: 0}
-    head := dummy
-    toggle := true
-    for l1 != nil && l2 != nil {
-        // 节点切换
-        if toggle {
-            head.Next = l1
-            l1 = l1.Next
-        } else {
-            head.Next = l2
-            l2 = l2.Next
+```java
+class Solution {
+    public void reorderList(ListNode head) {
+        if(head==null)
+            return;
+        ListNode middleNode=getMiddleNode(head);
+        ListNode head2=middleNode.next;
+        middleNode.next=null;
+        head2=reserve(head2);
+        ListNode head1=head.next;
+        ListNode p=head;
+        while(head1!=null && head2!=null)
+        {
+            p.next=head2;
+            head2=head2.next;
+            p=p.next;
+            p.next=head1;
+            head1=head1.next;
+            p=p.next;
         }
-        toggle = !toggle
-        head = head.Next
+        p.next= head1==null?head2:head1;
+        
+
     }
-    // 连接l1 未处理完节点
-    for l1 != nil {
-        head.Next = l1
-        head = head.Next
-        l1 = l1.Next
+    //返回中间节点
+    public ListNode getMiddleNode(ListNode head)
+    {
+        ListNode fast=head;
+        ListNode slow=head;
+        while(fast!=null && fast.next!=null)
+        {
+            slow=slow.next;
+            fast=fast.next.next;
+        }
+        return slow;
+
     }
-    // 连接l2 未处理完节点
-    for l2 != nil {
-        head.Next = l2
-        head = head.Next
-        l2 = l2.Next
+    //链表倒序
+    public ListNode reserve(ListNode head)
+    {
+        if(head==null || head.next==null)
+            return head;
+        ListNode newHead=reserve(head.next);
+        head.next.next=head;
+        head.next=null;
+        return newHead;
+        
     }
-    return dummy.Next
-}
-func reverseList(head *ListNode) *ListNode {
-    var prev *ListNode
-    for head != nil {
-        // 保存当前head.Next节点，防止重新赋值后被覆盖
-        // 一轮之后状态：nil<-1 2->3->4
-        //              prev   head
-        temp := head.Next
-        head.Next = prev
-        // pre 移动
-        prev = head
-        // head 移动
-        head = temp
-    }
-    return prev
+
 }
 ```
 
