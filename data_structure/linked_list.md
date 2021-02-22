@@ -313,6 +313,8 @@ func mergeSort(head *ListNode) *ListNode {
 - 快慢指针 判断 fast 及 fast.Next 是否为 nil 值
 - 递归 mergeSort 需要断开中间节点
 - 递归返回条件为 head 为 nil 或者 head.Next 为 nil
+
+
 ### [Middle of the Linked List](https://leetcode-cn.com/problems/middle-of-the-linked-list/)
 找到中间节点
 思路：快慢指针，一个进步2格，一个进步1格
@@ -324,6 +326,10 @@ public ListNode middleNode(ListNode head) {
         }
         return slow;
     }
+这两种方式不同点在于，**一般用 fast=head.Next 较多**，因为这样可以知道中点的上一个节点，可以用来删除等操作。
+
+- fast 如果初始化为 head.Next 则中点在 slow.Next
+- fast 初始化为 head,则中点在 slow
 
 ### [reorder-list](https://leetcode-cn.com/problems/reorder-list/)
 
@@ -388,152 +394,137 @@ class Solution {
 
 > 给定一个链表，判断链表中是否有环。
 
-思路：快慢指针，快慢指针相同则有环，证明：如果有环每走一步快慢指针距离会减 1
+思路：快慢指针，快慢指针相同则有环，证明：快指针会比慢指针先一步进入环中，当慢指针进入环中，可以看成是快指针去追慢指针，每经过一次循环，快指针离慢指针就近一步，所以如果有环则快指针一定会和慢指针相遇在一个位置。
 ![fast_slow_linked_list](https://img.fuiboom.com/img/fast_slow_linked_list.png)
 
-```go
-func hasCycle(head *ListNode) bool {
-    // 思路：快慢指针 快慢指针相同则有环，证明：如果有环每走一步快慢指针距离会减1
-    if head == nil {
-        return false
-    }
-    fast := head.Next
-    slow := head
-    for fast != nil && fast.Next != nil {
-        // 比较指针是否相等（不要使用val比较！）
-        if fast == slow {
-            return true
+```java
+public boolean hasCycle(ListNode head) {
+        if(head==null)
+            return false;
+        ListNode fast=head.next;
+        ListNode slow=head;
+        while(fast!=slow)
+        {
+            if(fast!=null && fast.next!=null)
+            {
+                fast=fast.next.next;
+            }
+            else
+                return false;
+            slow=slow.next;
+            
         }
-        fast = fast.Next.Next
-        slow = slow.Next
+        return true;
     }
-    return false
-}
 ```
 
 ### [linked-list-cycle-ii](https://leetcode-cn.com/problems/linked-list-cycle-ii/)
 
 > 给定一个链表，返回链表开始入环的第一个节点。  如果链表无环，则返回  `null`。
 
-思路：快慢指针，快慢相遇之后，慢指针回到头，快慢指针步调一致一起移动，相遇点即为入环点
+思路：快慢指针，快慢相遇之后，慢/快指针回到头，快慢指针步调一致一起移动，相遇点即为入环点
 ![cycled_linked_list](https://img.fuiboom.com/img/cycled_linked_list.png)
 
-```go
-func detectCycle(head *ListNode) *ListNode {
-    // 思路：快慢指针，快慢相遇之后，慢指针回到头，快慢指针步调一致一起移动，相遇点即为入环点
-    if head == nil {
-        return head
-    }
-    fast := head.Next
-    slow := head
-
-    for fast != nil && fast.Next != nil {
-        if fast == slow {
-            // 慢指针重新从头开始移动，快指针从第一次相交点下一个节点开始移动
-            fast = head
-            slow = slow.Next // 注意
-            // 比较指针对象（不要比对指针Val值）
-            for fast != slow {
-                fast = fast.Next
-                slow = slow.Next
+```java
+public ListNode detectCycle(ListNode head) {
+        if(head==null)
+            return null;
+        ListNode fast=head;
+        ListNode slow=head;
+        while(true)
+        {
+            if(fast!=null && fast.next!=null)
+            {
+                fast=fast.next.next;
             }
-            return slow
+            else
+                return null;
+            slow=slow.next;
+            if(slow==fast)
+                break;
         }
-        fast = fast.Next.Next
-        slow = slow.Next
+        fast=head;
+        while(fast!=slow)
+        {
+            fast=fast.next;
+            slow=slow.next;
+        }
+        return fast;
+        
     }
-    return nil
-}
 ```
-
+证明： 假设fast走了f步，slow走了s步，f=2s；
+	fast和slow在同一点相遇，此时，fast比slow多走了n个cycle，假设cycle的长度为c,则第一次相遇时，f=s+nc; 联立两个等式，得到s=nc，所以只要s再走a步（head到入口节点的距离），s就到了入口节点，所以让另一个节点从起点出发。
+	
 坑点
 
 - 指针比较时直接比较对象，不要用值比较，链表中有可能存在重复值情况
 - 第一次相交后，快指针需要从下一个节点开始和头指针一起匀速移动
 
-另外一种方式是 fast=head,slow=head
 
-```go
-func detectCycle(head *ListNode) *ListNode {
-    // 思路：快慢指针，快慢相遇之后，其中一个指针回到头，快慢指针步调一致一起移动，相遇点即为入环点
-    // nb+a=2nb+a
-    if head == nil {
-        return head
-    }
-    fast := head
-    slow := head
 
-    for fast != nil && fast.Next != nil {
-        fast = fast.Next.Next
-        slow = slow.Next
-        if fast == slow {
-            // 指针重新从头开始移动
-            fast = head
-            for fast != slow {
-                fast = fast.Next
-                slow = slow.Next
-            }
-            return slow
-        }
-    }
-    return nil
-}
-```
-
-这两种方式不同点在于，**一般用 fast=head.Next 较多**，因为这样可以知道中点的上一个节点，可以用来删除等操作。
-
-- fast 如果初始化为 head.Next 则中点在 slow.Next
-- fast 初始化为 head,则中点在 slow
 
 ### [palindrome-linked-list](https://leetcode-cn.com/problems/palindrome-linked-list/)
 
 > 请判断一个链表是否为回文链表。
-
-```go
-func isPalindrome(head *ListNode) bool {
-    // 1 2 nil
-    // 1 2 1 nil
-    // 1 2 2 1 nil
-    if head==nil{
-        return true
-    }
-    slow:=head
-    // fast如果初始化为head.Next则中点在slow.Next
-    // fast初始化为head,则中点在slow
-    fast:=head.Next
-    for fast!=nil&&fast.Next!=nil{
-        fast=fast.Next.Next
-        slow=slow.Next
-    }
-
-    tail:=reverse(slow.Next)
-    // 断开两个链表(需要用到中点前一个节点)
-    slow.Next=nil
-    for head!=nil&&tail!=nil{
-        if head.Val!=tail.Val{
-            return false
+方法1：快慢指针：找到中间节点之后，将后半部分翻转，进行对比。实际使用中，应该在判断完之后将它恢复，此外，在并发环境下，函数运行时需要锁定其他线程或进程对链表的访问，因为在函数执行过程中链表会被修改
+```java
+public boolean isPalindrome(ListNode head) {
+        if(head==null||head.next==null)
+            return true;
+        ListNode fast=head;
+        ListNode slow=head;
+        while(fast!=null && fast.next!=null)
+        {
+            slow=slow.next;
+            fast=fast.next.next;
         }
-        head=head.Next
-        tail=tail.Next
-    }
-    return true
+        ListNode head2=reverse(slow);
+        while(head!=null && head2!=null)
+        {
+            if(head.val!=head2.val)
+                return false;
+            head=head.next;
+            head2=head2.next;
+        }
+        return true;
 
+    }
+    public ListNode reverse(ListNode head)
+    {
+        if(head==null|| head.next==null)
+            return head;
+        ListNode newHead=reverse(head.next);
+        head.next.next=head;
+        head.next=null;
+        return newHead;
+    }
+```
+方法2：递归
+```java
+class Solution {
+    private ListNode frontPointer;
+
+    private boolean recursivelyCheck(ListNode currentNode) {
+        if (currentNode != null) {
+            if (!recursivelyCheck(currentNode.next)) {
+                return false;
+            }
+            if (currentNode.val != frontPointer.val) {
+                return false;
+            }
+            frontPointer = frontPointer.next;
+        }
+        return true;
+    }
+
+    public boolean isPalindrome(ListNode head) {
+        frontPointer = head;
+        return recursivelyCheck(head);
+    }
 }
 
-func reverse(head *ListNode)*ListNode{
-    // 1->2->3
-    if head==nil{
-        return head
-    }
-    var prev *ListNode
-    for head!=nil{
-        t:=head.Next
-        head.Next=prev
-        prev=head
-        head=t
-    }
-    return prev
-}
+
 ```
 
 ### [copy-list-with-random-pointer](https://leetcode-cn.com/problems/copy-list-with-random-pointer/)
