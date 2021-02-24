@@ -532,42 +532,42 @@ class Solution {
 > 给定一个链表，每个节点包含一个额外增加的随机指针，该指针可以指向链表中的任何节点或空节点。
 > 要求返回这个链表的 深拷贝。
 
-思路：1、hash 表存储指针，2、复制节点跟在原节点后面
-
-```go
-func copyRandomList(head *Node) *Node {
-	if head == nil {
-		return head
-	}
-	// 复制节点，紧挨到到后面
-	// 1->2->3  ==>  1->1'->2->2'->3->3'
-	cur := head
-	for cur != nil {
-		clone := &Node{Val: cur.Val, Next: cur.Next}
-		temp := cur.Next
-		cur.Next = clone
-		cur = temp
-	}
-	// 处理random指针
-	cur = head
-	for cur != nil {
-		if cur.Random != nil {
-			cur.Next.Random = cur.Random.Next
-		}
-		cur = cur.Next.Next
-	}
-	// 分离两个链表
-	cur = head
-	cloneHead := cur.Next
-	for cur != nil && cur.Next != nil {
-		temp := cur.Next
-		cur.Next = cur.Next.Next
-		cur = temp
-	}
-	// 原始链表头：head 1->2->3
-	// 克隆的链表头：cloneHead 1'->2'->3'
-	return cloneHead
-}
+思路：HashMap 两次遍历
+添加：put(key,value);
+访问：get(key);
+删除：remove(key);
+大小：size()
+迭代：foreach(Interger i :sites.KeySet())
+```java
+public Node copyRandomList(Node head) {
+        if(head==null)
+            return null;
+        Node head2=new Node(head.val);
+        HashMap<Node,Node> nodes=new HashMap<Node,Node>();
+        nodes.put(head,head2);
+        Node p=head.next;
+        Node p2=head2;
+        while(p!=null)
+        {
+            Node newNode=new Node(p.val);
+            nodes.put(p,newNode);
+            p2.next=newNode;
+            p2=newNode;
+            p=p.next;
+        }
+        p=head;
+        p2=head2;
+        while(p!=null)
+        {
+            if(p.random!=null)
+            {
+                p2.random=nodes.get(p.random);
+            }
+            p=p.next;
+            p2=p2.next;
+        }
+        return head2;
+    }
 ```
 
 ## 总结
