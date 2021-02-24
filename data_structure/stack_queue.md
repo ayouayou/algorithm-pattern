@@ -16,69 +16,65 @@
 
 > 设计一个支持 push，pop，top 操作，并能在常数时间内检索到最小元素的栈。
 
-思路：用两个栈实现，一个最小栈始终保证最小值在顶部
+思路1：用两个栈实现，一个最小栈始终保证最小值在顶部
+思路2：新增一个值为min，记录当前值作为头时和最小值的差值
 
-```go
-type MinStack struct {
-    min []int
-    stack []int
+```java
+class Node
+{
+    int val;
+    Node next;
+    int min;
+    public Node(int val)
+    {
+        this.val=val;
+        next=null;
+        min=0;
+    }
+    public Node(int val,int min)
+    {
+        this.val=val;
+        next=null;
+        this.min=min;
+    }
 }
-
-
-/** initialize your data structure here. */
-func Constructor() MinStack {
-    return MinStack{
-        min: make([]int, 0),
-        stack: make([]int, 0),
+class MinStack {
+    Node head;
+    /** initialize your data structure here. */
+    public MinStack() {
+        head=null;
+    }
+    
+    public void push(int x) {
+        
+        if(head==null)
+        {
+            Node node=new Node(x);
+            head=node;
+        }
+        else
+        {
+            Node node=new Node(x,(head.val+head.min)<x?(head.val+head.min-x):0);
+            node.next=head;
+            head=node;
+        }
+    }
+    
+    public void pop() {
+        Node node=head;
+        head=head.next;
+        node=null;
+    }
+    
+    public int top() {
+        return head.val;
+    }
+    
+    public int getMin() {
+        return head.val+head.min;
     }
 }
 
-
-func (this *MinStack) Push(x int)  {
-    min := this.GetMin()
-    if x < min {
-        this.min = append(this.min, x)
-    } else {
-        this.min = append(this.min, min)
-    }
-    this.stack = append(this.stack, x)
-}
-
-
-func (this *MinStack) Pop()  {
-    if len(this.stack) == 0 {
-        return
-    }
-    this.stack = this.stack[:len(this.stack)-1]
-    this.min = this.min[:len(this.min)-1]
-}
-
-
-func (this *MinStack) Top() int {
-    if len(this.stack) == 0 {
-        return 0
-    }
-    return this.stack[len(this.stack)-1]
-}
-
-
-func (this *MinStack) GetMin() int {
-    if len(this.min) == 0 {
-        return 1 << 31
-    }
-    min := this.min[len(this.min)-1]
-    return min
-}
-
-
-/**
- * Your MinStack object will be instantiated and called as such:
- * obj := Constructor();
- * obj.Push(x);
- * obj.Pop();
- * param_3 := obj.Top();
- * param_4 := obj.GetMin();
- */
 ```
 
 [evaluate-reverse-polish-notation](https://leetcode-cn.com/problems/evaluate-reverse-polish-notation/)
