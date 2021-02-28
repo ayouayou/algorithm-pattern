@@ -1,5 +1,19 @@
 # 栈和队列
-
+## JAVA中的实现
+### Stack 栈
+```java
+	Stack<Integer> s=new Stack<Integer>();
+	s.push(3); //入栈
+	s.pop(); //出栈
+	s.peek();//只取栈顶元素，不做出栈操作
+````
+### Queue 队
+```java
+	Queue<Integer> s=new LinkedList<Integer>();
+	s.offer(3); //入队
+	s.poll(); //出队
+	s.peek();//只取栈顶元素，不做出栈操作
+````
 ## 简介
 
 栈的特点是后入先出
@@ -85,41 +99,49 @@ class MinStack {
 
 思路：通过栈保存原来的元素，遇到表达式弹出运算，再推入结果，重复这个过程
 
-```go
-func evalRPN(tokens []string) int {
-    if len(tokens)==0{
-        return 0
-    }
-    stack:=make([]int,0)
-    for i:=0;i<len(tokens);i++{
-        switch tokens[i]{
-        case "+","-","*","/":
-            if len(stack)<2{
-                return -1
+```java
+public int evalRPN(String[] tokens) {
+        Stack<Integer> s=new Stack<Integer>();
+        int num1,num2,num3;
+        for(String operand:tokens)
+        {
+            if(operand.equals("+"))   //使用==会有错：因为String 类不是基本数据类型，==比较的是地址，equal比较的是值
+            {
+                num1=s.pop();
+                num2=s.pop();
+                num3=num1+num2;
+                s.push(num3);
             }
-            // 注意：a为被除数，b为除数
-            b:=stack[len(stack)-1]
-            a:=stack[len(stack)-2]
-            stack=stack[:len(stack)-2]
-            var result int
-            switch tokens[i]{
-            case "+":
-                result=a+b
-            case "-":
-                result=a-b
-            case "*":
-                result=a*b
-            case "/":
-                result=a/b
+            else if(operand.equals("-"))
+            {
+                num1=s.pop();
+                num2=s.pop();
+                num3=num2-num1;
+                s.push(num3);
             }
-            stack=append(stack,result)
-        default:
-            // 转为数字
-            val,_:=strconv.Atoi(tokens[i])
-            stack=append(stack,val)
+            else if(operand.equals("*"))
+            {
+                num1=s.pop();
+                num2=s.pop();
+                num3=num1*num2;
+                s.push(num3);
+            }
+            else if(operand.equals("/"))
+            {
+                num1=s.pop();
+                num2=s.pop();
+                num3=num2/num1;
+                s.push(num3);
+            }
+            else
+            {
+                num1=Integer.valueOf(operand);       //将String 转为int，反向转化也是用valueOf()
+                s.push(num1);
+            }
         }
+        return s.pop();
+
     }
-    return stack[0]
 }
 ```
 
@@ -199,27 +221,25 @@ boolean DFS(int root, int target) {
 
 > 给定一个二叉树，返回它的*中序*遍历。
 
-```go
+```java
 // 思路：通过stack 保存已经访问的元素，用于原路返回
-func inorderTraversal(root *TreeNode) []int {
-    result := make([]int, 0)
-    if root == nil {
-        return result
-    }
-    stack := make([]*TreeNode, 0)
-    for len(stack) > 0 || root != nil {
-        for root != nil {
-            stack = append(stack, root)
-            root = root.Left // 一直向左
+public List<Integer> inorderTraversal(TreeNode root) {
+        List<Integer> list=new ArrayList<Integer>();
+        Deque<TreeNode> stack=new LinkedList();
+        TreeNode p=root;
+        while(stack.size()>0||p!=null)
+        {
+            while(p!=null)
+            {
+                stack.push(p);
+                p=p.left;
+            }
+            p=stack.pop();
+            list.add(p.val);
+            p=p.right;
         }
-        // 弹出
-        val := stack[len(stack)-1]
-        stack = stack[:len(stack)-1]
-        result = append(result, val.Val)
-        root = val.Right
+        return list;
     }
-    return result
-}
 ```
 
 [clone-graph](https://leetcode-cn.com/problems/clone-graph/)
