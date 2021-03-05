@@ -3,6 +3,16 @@
 ## 常见二进制操作
 
 ### 基本操作
+**与  &**
+**或  |**
+**非  !**
+**异或  ^**
+**左移n位 <<n** 
+	符号位不变
+**无符号左移n位  <<<n**
+**右移n位 <<n** 
+	符号位不变
+**无符号右移n位  <<<n**
 
 a=0^a=a^0
 
@@ -32,16 +42,18 @@ diff=(n&(n-1))^n
 
 > 给定一个**非空**整数数组，除了某个元素只出现一次以外，其余每个元素均出现两次。找出那个只出现了一次的元素。
 
-```go
-func singleNumber(nums []int) int {
-    // 10 ^10 == 00
-    // 两个数异或就变成0
-    result:=0
-    for i:=0;i<len(nums);i++{
-        result=result^nums[i]
+```java
+class Solution {
+    public int singleNumber(int[] nums) {
+        int result=0;
+        for(int num :nums)
+        {
+            result=result^num;
+        }
+        return result;
     }
-    return result
 }
+
 ```
 
 [single-number-ii](https://leetcode-cn.com/problems/single-number-ii/)
