@@ -149,31 +149,26 @@ func searchRange (A []int, target int) []int {
 
 > 给定一个排序数组和一个目标值，在数组中找到目标值，并返回其索引。如果目标值不存在于数组中，返回它将会被按顺序插入的位置。
 
-```go
-func searchInsert(nums []int, target int) int {
-    // 思路：找到第一个 >= target 的元素位置
-    start := 0
-    end := len(nums) - 1
-    for start+1 < end {
-        mid := start + (end-start)/2
-        if nums[mid] == target {
-            // 标记开始位置
-            start = mid
-        } else if nums[mid] > target {
-            end = mid
-        } else {
-            start = mid
+```java
+ public int searchInsert(int[] nums, int target) {
+        int start =0;
+        int end=nums.length;
+        while(start<end)
+        {
+            int mid=start+(end-start)/2;
+            
+            if(nums[mid]>=target)
+            {
+                end=mid;
+            }
+            else
+            {
+                start=mid+1;
+            }
         }
+        
+        return start;
     }
-    if nums[start] >= target {
-        return start
-    } else if nums[end] >= target {
-        return end
-    } else if nums[end] < target { // 目标值比所有值都大
-        return end + 1
-    }
-    return 0
-}
 ```
 
 ### [search-a-2d-matrix](https://leetcode-cn.com/problems/search-a-2d-matrix/)
@@ -183,33 +178,59 @@ func searchInsert(nums []int, target int) int {
 > - 每行中的整数从左到右按升序排列。
 > - 每行的第一个整数大于前一行的最后一个整数。
 
-```go
-func searchMatrix(matrix [][]int, target int) bool {
-    // 思路：将2纬数组转为1维数组 进行二分搜索
-    if len(matrix) == 0 || len(matrix[0]) == 0 {
-        return false
-    }
-    row := len(matrix)
-    col := len(matrix[0])
-    start := 0
-    end := row*col - 1
-    for start+1 < end {
-        mid := start + (end-start)/2
-        // 获取2纬数组对应值
-        val := matrix[mid/col][mid%col]
-        if val > target {
-            end = mid
-        } else if val < target {
-            start = mid
-        } else {
-            return true
+```java
+public boolean searchMatrix(int[][] matrix, int target) {
+        
+        int top=-1;
+        int bottle=matrix.length-1;
+        while(top<bottle)
+        {
+            int mid=top+(bottle-top+1)/2;
+            if(matrix[mid][0]>target)
+            {
+                bottle=mid-1;
+            }
+            else
+                top=mid;
+            
         }
+        if(top==-1)
+        return false;
+        int left=0;
+        int right=matrix[0].length-1;
+        while(left<=right)
+        {
+            int mid=left+(right-left)/2;
+            if(matrix[top][mid]==target)
+            return true;
+            else if(matrix[top][mid]>target)
+                right=mid-1;
+            else
+                left=mid+1;
+        }
+        return false;
     }
-    if matrix[start/col][start%col] == target || matrix[end/col][end%col] == target{
-        return true
+```
+方法二：看成是以为矩阵
+```java
+public boolean searchMatrix(int[][] matrix, int target) {
+        int len=matrix.length*matrix[0].length;
+        int left=0;
+        int right=len-1;
+        while(left<=right)
+        {
+            int mid=left+(right-left)/2;
+            int index1=mid/matrix[0].length;
+            int index2=mid%matrix[0].length;
+            if(matrix[index1][index2]==target)
+            return true;
+            else if(matrix[index1][index2]>target)
+                right=mid-1;
+            else
+                left=mid+1;
+        }
+        return false;
     }
-    return false
-}
 ```
 
 ### [first-bad-version](https://leetcode-cn.com/problems/first-bad-version/)
@@ -217,24 +238,21 @@ func searchMatrix(matrix [][]int, target int) bool {
 > 假设你有 n 个版本 [1, 2, ..., n]，你想找出导致之后所有版本出错的第一个错误的版本。
 > 你可以通过调用  bool isBadVersion(version)  接口来判断版本号 version 是否在单元测试中出错。实现一个函数来查找第一个错误的版本。你应该尽量减少对调用 API 的次数。
 
-```go
-func firstBadVersion(n int) int {
-    // 思路：二分搜索
-    start := 0
-    end := n
-    for start+1 < end {
-        mid := start + (end - start)/2
-        if isBadVersion(mid) {
-            end = mid
-        } else if isBadVersion(mid) == false {
-            start = mid
+```java
+//注意起点和结束的值
+public int firstBadVersion(int n) {
+        int left=1;
+        int right=n;
+        while(left<right)
+        {
+            int mid=left+(right-left)/2;
+            if(isBadVersion(mid)==true)
+                right=mid;
+            else
+                left=mid+1;
         }
+        return left;
     }
-    if isBadVersion(start) {
-        return start
-    }
-    return end
-}
 ```
 
 ### [find-minimum-in-rotated-sorted-array](https://leetcode-cn.com/problems/find-minimum-in-rotated-sorted-array/)
@@ -242,29 +260,21 @@ func firstBadVersion(n int) int {
 > 假设按照升序排序的数组在预先未知的某个点上进行了旋转( 例如，数组  [0,1,2,4,5,6,7] 可能变为  [4,5,6,7,0,1,2] )。
 > 请找出其中最小的元素。
 
-```go
-func findMin(nums []int) int {
-    // 思路：/ / 最后一个值作为target，然后往左移动，最后比较start、end的值
-    if len(nums) == 0 {
-        return -1
-    }
-    start := 0
-    end := len(nums) - 1
-
-    for start+1 < end {
-        mid := start + (end-start)/2
-        // 最后一个元素值为target
-        if nums[mid] <= nums[end] {
-            end = mid
-        } else {
-            start = mid
+```java
+//方法一：O(n)
+public int findMin(int[] nums) {
+        int min=nums[0];
+        for(int i=1;i<nums.length;i++)
+        {
+            if(nums[i]<nums[i-1])
+            {
+                return nums[i];
+            }
         }
+        return min;
     }
-    if nums[start] > nums[end] {
-        return nums[end]
-    }
-    return nums[start]
-}
+ //方法二：二分O(logn)
+ 
 ```
 
 ### [find-minimum-in-rotated-sorted-array-ii](https://leetcode-cn.com/problems/find-minimum-in-rotated-sorted-array-ii/)
